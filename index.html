@@ -737,32 +737,87 @@
     transform: translateX(-50%) translateY(0);
   }
 
+  /* ============ DOUBLE-TAP PHOTO HEART POP ============ */
+  .photo-heart-pop {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    color: #ff4d6d;
+    font-size: 5rem;
+    pointer-events: none;
+    z-index: 10;
+    text-shadow: 0 0 25px rgba(255, 77, 109, 0.7);
+    animation: photoHeartPop 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  @keyframes photoHeartPop {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    40% { transform: translate(-50%, -50%) scale(1.4); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0; }
+  }
+
   /* ============ HIDDEN HEART HUNT ============ */
   .hidden-heart {
     position: absolute;
-    color: rgba(201, 137, 148, 0.35);
-    font-size: 1.2rem;
+    color: rgba(201, 137, 148, 0.7);
+    font-size: 1.9rem;
     cursor: pointer;
     transition: all 0.3s ease;
     z-index: 5;
     user-select: none;
+    animation: heartHint 2.5s ease-in-out infinite;
+    text-shadow: 0 0 12px rgba(201, 137, 148, 0.5);
+    will-change: transform, opacity;
+  }
+  @keyframes heartHint {
+    0%, 100% { opacity: 0.55; transform: scale(1) translateY(0); }
+    50% { opacity: 1; transform: scale(1.25) translateY(-3px); }
   }
   .hidden-heart:hover {
     color: var(--rose-gold);
-    transform: scale(1.5);
-    text-shadow: 0 0 20px var(--rose-gold);
+    transform: scale(1.7) !important;
+    text-shadow: 0 0 25px var(--rose-gold);
+    animation: none;
+    opacity: 1 !important;
   }
   .hidden-heart.found {
-    animation: heartFound 1s ease forwards;
+    animation: heartFound 1.2s ease forwards;
     pointer-events: none;
   }
   @keyframes heartFound {
     0% { transform: scale(1); }
-    50% { transform: scale(2.5); color: var(--rose-gold); text-shadow: 0 0 30px var(--rose-gold); }
+    50% { transform: scale(3); color: var(--rose-gold); text-shadow: 0 0 40px var(--rose-gold); }
     100% { transform: scale(0); opacity: 0; }
   }
 
-  /* ============ MUSIC TOGGLE ============ */
+  /* The bonus 6th heart — appears only after finding all 5 */
+  .bonus-heart {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    color: var(--gold);
+    font-size: 2.4rem;
+    cursor: pointer;
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0) rotate(-30deg);
+    transition: opacity 1s ease, transform 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-shadow: 0 0 25px var(--gold), 0 0 50px var(--rose-gold);
+    animation: bonusFloat 3s ease-in-out infinite;
+    animation-play-state: paused;
+  }
+  .bonus-heart.revealed {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    pointer-events: auto;
+    animation-play-state: running;
+  }
+  @keyframes bonusFloat {
+    0%, 100% { transform: scale(1) translateY(0) rotate(0deg); }
+    50% { transform: scale(1.1) translateY(-8px) rotate(5deg); }
+  }
+
+  /* ============ MUSIC PLAYER ============ */
   .music-toggle {
     position: fixed;
     top: 20px; right: 20px;
@@ -774,17 +829,200 @@
     font-size: 1.2rem;
     cursor: pointer;
     box-shadow: 0 10px 30px rgba(199, 137, 148, 0.4);
-    z-index: 50;
+    z-index: 60;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
   }
   .music-toggle:hover { transform: scale(1.1) rotate(15deg); }
-  .music-toggle.playing { animation: spinSlow 8s linear infinite; }
-  @keyframes spinSlow { to { transform: rotate(360deg); } }
+  .music-toggle.active {
+    background: linear-gradient(135deg, var(--rose-gold-deep), var(--rose-gold));
+  }
 
-  /* ============ MOBILE ============ */
+  .music-panel {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    width: 320px;
+    background: linear-gradient(135deg, rgba(255,250,246,0.97), rgba(252,228,232,0.97));
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(201, 137, 148, 0.4);
+    padding: 16px;
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(199, 137, 148, 0.45);
+    z-index: 55;
+    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-align: center;
+  }
+  .music-panel.hidden {
+    opacity: 0;
+    transform: translateY(-15px) scale(0.92);
+    pointer-events: none;
+  }
+  .music-panel-header {
+    font-family: 'Pinyon Script', cursive;
+    font-size: 1.8rem;
+    color: var(--rose-gold-deep);
+    margin-bottom: 4px;
+    line-height: 1;
+  }
+  .music-panel-sub {
+    font-family: 'Italiana', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+
+  /* 16:9 responsive YouTube wrap */
+  .yt-wrap {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    height: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  }
+  .yt-wrap iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border: 0;
+  }
+
+  .music-panel-tip {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    margin-top: 12px;
+    line-height: 1.5;
+  }
+  .music-fallback {
+    display: block;
+    text-align: center;
+    font-family: 'Italiana', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--rose-gold);
+    text-decoration: none;
+    margin-top: 8px;
+    opacity: 0.75;
+    transition: opacity 0.2s ease;
+  }
+  .music-fallback:hover { opacity: 1; }
+
+  @media (max-width: 480px) {
+    .music-panel {
+      width: calc(100vw - 40px);
+      right: 20px;
+    }
+  }
+
+  /* ============ EASTER EGG: NAME FLOAT OVERLAY ============ */
+  .name-float-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at center, rgba(252,228,232,0.85), rgba(253,246,240,0.6) 60%, transparent 90%);
+    opacity: 0;
+    animation: nameFloatBg 4s ease forwards;
+  }
+  @keyframes nameFloatBg {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  .name-float-text {
+    font-family: 'Pinyon Script', cursive;
+    font-size: clamp(5rem, 22vw, 18rem);
+    background: linear-gradient(135deg, #c98994 0%, #d4a574 40%, #a76570 70%, #c98994 100%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
+    line-height: 1;
+    transform: scale(0.3) rotate(-5deg);
+    animation: nameFloatPop 4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, shimmer 4s ease-in-out infinite;
+    text-shadow: 0 0 60px rgba(201, 137, 148, 0.5);
+  }
+  @keyframes nameFloatPop {
+    0% { transform: scale(0.3) rotate(-5deg); opacity: 0; }
+    25% { transform: scale(1.05) rotate(0deg); opacity: 1; }
+    75% { transform: scale(1) rotate(0deg); opacity: 1; }
+    100% { transform: scale(1.3) rotate(0deg); opacity: 0; }
+  }
+
+  /* ============ HEART RAIN ============ */
+  .heart-rain {
+    position: fixed;
+    pointer-events: none;
+    color: var(--rose-gold);
+    font-size: 1.5rem;
+    z-index: 150;
+    animation: heartRainFall 3s ease-in forwards;
+    filter: drop-shadow(0 0 8px rgba(201,137,148,0.6));
+  }
+  @keyframes heartRainFall {
+    0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ============ CONFETTI ============ */
+  .confetti-piece {
+    position: fixed;
+    width: 10px; height: 14px;
+    pointer-events: none;
+    z-index: 150;
+    animation: confettiFall 4s linear forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0.4; }
+  }
+
+  /* Pulse for triple-click hero name */
+  .hero-name.pulse-special {
+    animation: heroPulse 1.5s ease 1, shimmer 6s ease-in-out infinite;
+  }
+  @keyframes heroPulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); }
+    50% { transform: scale(1.08); filter: drop-shadow(0 0 40px var(--rose-gold)); }
+  }
+
+  /* Signature glow on click */
+  .letter-signature .name {
+    transition: all 0.4s ease;
+    cursor: pointer;
+  }
+  .letter-signature .name:hover {
+    text-shadow: 0 0 25px var(--rose-gold);
+  }
+  .letter-signature .extra-line {
+    display: none;
+    margin-top: 1rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--rose-gold-deep);
+    font-size: 1rem;
+    opacity: 0;
+    transition: opacity 1s ease;
+  }
+  .letter-signature .extra-line.visible {
+    display: block;
+    opacity: 1;
+  }
   @media (max-width: 768px) {
     section { padding: 4rem 1rem; }
     .timeline::before { left: 20px; }
@@ -824,14 +1062,14 @@
 <!-- ============ HERO ============ -->
 <section class="hero">
   <div class="hero-decoration">Four Years of Us</div>
-  <h1 class="hero-name">Muskan</h1>
+  <h1 class="hero-name" id="heroName">Muskan</h1>
   <p class="hero-subtitle">
     Today the calendar says four years.<br>
     My heart says <em>just the beginning</em>.
   </p>
   <div class="hero-date">26 • April • 2026</div>
   <div class="scroll-cue">SCROLL</div>
-  <span class="hidden-heart" style="top: 15%; left: 8%;" data-heart="1">❤</span>
+  <span class="hidden-heart" style="top: 22%; left: 6%;" data-heart="1">❤</span>
 </section>
 
 <!-- ============ OUR STORY ============ -->
@@ -1042,7 +1280,8 @@
       </div>
       <div class="letter-signature">
         <div class="closing">Always &amp; forever yours,</div>
-        <div class="name">Beetu</div>
+        <div class="name" id="signatureName">Beetu</div>
+        <div class="extra-line" id="signatureExtra">P.S. — I knew you'd click my name. ♡</div>
       </div>
     </div>
   </div>
@@ -1059,7 +1298,7 @@
     <div class="count-box"><div class="count-number" id="minutes">0</div><div class="count-label">Minutes</div></div>
     <div class="count-box"><div class="count-number" id="seconds">0</div><div class="count-label">Seconds</div></div>
   </div>
-  <div class="wedding-date-tag">12 • December • 2026</div>
+  <div class="wedding-date-tag" id="weddingDate" style="cursor: pointer;">12 • December • 2026</div>
   <span class="hidden-heart" style="bottom: 10%; left: 10%;" data-heart="4">❤</span>
 </section>
 
@@ -1071,13 +1310,34 @@
   </p>
   <div class="finale-tag">M &nbsp; ♡ &nbsp; B</div>
   <p style="margin-top: 3rem; font-style: italic; color: var(--ink-soft); font-size: 1rem;">
-    <em>Psst — try clicking anywhere on the page. And see if you can find all five hidden hearts. ♡</em>
+    <em>Psst — try clicking anywhere. Find five hidden hearts. Try typing words. Triple-click my name up top. There are more secrets than you think. ♡</em>
   </p>
   <span class="hidden-heart" style="top: 20%; right: 15%;" data-heart="5">❤</span>
 </section>
 
 <!-- Toast for easter eggs -->
 <div class="toast" id="toast"></div>
+
+<!-- Bonus 6th heart, hidden until all 5 found -->
+<span class="bonus-heart" id="bonusHeart">✨</span>
+
+<!-- Music panel (slides out from below the music button) -->
+<div class="music-panel hidden" id="musicPanel">
+  <div class="music-panel-header">our song</div>
+  <div class="music-panel-sub">— ♪ —</div>
+  <div class="yt-wrap">
+    <iframe 
+      id="ytFrame"
+      src="https://www.youtube.com/embed/ZSRl-01sOtQ?si=8sHDMowYc67iTmLu&controls=1&modestbranding=1&rel=0&loop=1&playlist=ZSRl-01sOtQ"
+      title="Our song"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allowfullscreen></iframe>
+  </div>
+  <div class="music-panel-tip">Tap ▶ on the player above ♡</div>
+  <a href="https://www.youtube.com/watch?v=ZSRl-01sOtQ" target="_blank" rel="noopener" class="music-fallback">If it doesn't load — open in YouTube ↗</a>
+</div>
 
 <script>
   // ============ FALLING PETALS ============
@@ -1182,27 +1442,437 @@
         '★ All five found ★ You\'re the absolute best, and I\'m the luckiest. ♡'
       ];
       showToast(messages[foundHearts - 1]);
+      // Real celebration on the fifth
+      if (foundHearts === 5) {
+        setTimeout(() => celebrateAllHearts(), 400);
+        // Reveal the bonus 6th heart
+        setTimeout(() => {
+          const bonus = document.getElementById('bonusHeart');
+          if (bonus) {
+            bonus.classList.add('revealed');
+            setTimeout(() => {
+              showToast('Look bottom-left ♡ one more, just for you.');
+            }, 1800);
+          }
+        }, 4500);
+      }
     });
   });
 
-  // ============ MUSIC TOGGLE (placeholder) ============
-  const musicBtn = document.getElementById('musicToggle');
-  musicBtn.addEventListener('click', () => {
-    musicBtn.classList.toggle('playing');
-    if (musicBtn.classList.contains('playing')) {
-      showToast('♪ Imagine our song playing right here ♪ (Beetu — drop the URL in the code!)');
+  // Click the bonus heart for the ultimate message
+  const bonusHeart = document.getElementById('bonusHeart');
+  if (bonusHeart) {
+    bonusHeart.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showToast('★ THE SIXTH HEART ★ This one\'s the truth: I\'m yours, completely. Always. ♡ — Beetu');
+      // Massive celebration
+      for (let i = 0; i < 50; i++) setTimeout(spawnHeartRain, i * 50);
+      for (let i = 0; i < 80; i++) setTimeout(spawnConfetti, i * 40);
+      bonusHeart.style.animation = 'heartFound 2s ease forwards';
+      setTimeout(() => bonusHeart.remove(), 2200);
+    });
+  }
+
+  // ============ NEW: PAGE TITLE HIJACK (when she switches tabs) ============
+  const originalTitle = document.title;
+  const awayTitles = [
+    '♡ come back, jaan ♡',
+    '✦ I miss you already ✦',
+    '♡ Muskan, where did you go? ♡',
+    '✦ The page is lonely without you ✦'
+  ];
+  let titleInterval;
+  let titleIdx = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      titleInterval = setInterval(() => {
+        document.title = awayTitles[titleIdx % awayTitles.length];
+        titleIdx++;
+      }, 1500);
+    } else {
+      clearInterval(titleInterval);
+      document.title = originalTitle;
     }
   });
 
-  // ============ KONAMI-LIKE SECRET ============
+  // ============ NEW: CONSOLE LOVE LETTER (for the curious) ============
+  const consoleStyle1 = 'color: #c98994; font-size: 24px; font-family: "Pinyon Script", cursive; font-weight: bold;';
+  const consoleStyle2 = 'color: #a76570; font-size: 14px; font-style: italic;';
+  const consoleStyle3 = 'color: #d4a574; font-size: 12px; letter-spacing: 0.3em;';
+  console.log('%c♡ Muskan ♡', consoleStyle1);
+  console.log('%cYou found the secret place. Of course you did.', consoleStyle2);
+  console.log('%cYou\'ve always been the curious one — that\'s one of a million reasons I love you.', consoleStyle2);
+  console.log('%cThis website was built for you, every single line of it. With love, by Beetu (and a little AI helper) ♡', consoleStyle2);
+  console.log('%c— B & M • 26.04.2026 → 12.12.2026 → ∞ —', consoleStyle3);
+
+  // ============ NEW: TRAVEL DESTINATION CARDS ============
+  const destinationMessages = {
+    'Santorini': 'Sunsets so good, you might forgive me for taking too many photos. ♡',
+    'Maldives': 'Just you, me, and water clearer than my feelings for you.',
+    'Switzerland': 'I promised you a long coat moment. Switzerland delivers.',
+    'Paris': 'I\'ll buy you that croissant. You\'ll fight me for it. Worth it.',
+    'Kyoto': 'Cherry blossoms last two weeks. I\'ll love you a little longer than that.',
+    'Bali': 'A villa, a pool, no schedule, no stress. Just us.',
+    'Iceland': 'If the auroras don\'t come out, I\'ll just look at you instead.',
+    'Anywhere': 'This one\'s already happening, jaan. ♡'
+  };
+  document.querySelectorAll('.destination').forEach(dest => {
+    dest.style.cursor = 'pointer';
+    dest.addEventListener('click', () => {
+      const nameEl = dest.querySelector('.destination-name');
+      if (nameEl && destinationMessages[nameEl.textContent.trim()]) {
+        showToast(destinationMessages[nameEl.textContent.trim()]);
+      }
+    });
+  });
+
+  // ============ NEW: TIMELINE MILESTONE WHISPERS ============
+  const milestoneWhispers = [
+    'A friend, a hello, and the rest is us.',
+    'Mountains witnessed. Decision made.',
+    'Trains, planes, and \"I\'m coming home soon.\"',
+    'Inter-caste, inter-everything, in love anyway.',
+    'And here we are. April 26, 2026. Hi, jaan. ♡'
+  ];
+  document.querySelectorAll('.milestone-content').forEach((m, idx) => {
+    m.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (milestoneWhispers[idx]) showToast(milestoneWhispers[idx]);
+    });
+  });
+
+  // ============ NEW: PHOTO TRIPLE-TAP COMBO ============
+  let photoSequence = [];
+  document.querySelectorAll('.photo-frame').forEach((frame, idx) => {
+    frame.addEventListener('click', () => {
+      photoSequence.push(idx);
+      if (photoSequence.length > 3) photoSequence.shift();
+      // 3 different photos in 4 seconds
+      const unique = new Set(photoSequence);
+      if (unique.size === 3) {
+        showToast('Three memories in a row. Each one my favourite. ♡');
+        photoSequence = [];
+      }
+      // Reset after 4s of no action
+      clearTimeout(window._photoSeqTimer);
+      window._photoSeqTimer = setTimeout(() => { photoSequence = []; }, 4000);
+    });
+  });
+
+  // ============ NEW: HEART HUNT HINT (after 30s if 0 hearts found) ============
+  setTimeout(() => {
+    if (foundHearts === 0) {
+      showToast('Psst — there are 5 little hearts hidden on this page. Find them all ♡');
+    }
+  }, 30000);
+
+  // ============ MUSIC PANEL TOGGLE ============
+  const musicBtn = document.getElementById('musicToggle');
+  const musicPanel = document.getElementById('musicPanel');
+  let panelOpen = false;
+  let firstOpen = true;
+
+  musicBtn.addEventListener('click', () => {
+    panelOpen = !panelOpen;
+    if (panelOpen) {
+      musicPanel.classList.remove('hidden');
+      musicBtn.classList.add('active');
+      musicBtn.textContent = '×';
+      if (firstOpen) {
+        showToast('♪ Tap ▶ on the player ♪');
+        firstOpen = false;
+      }
+    } else {
+      musicPanel.classList.add('hidden');
+      musicBtn.classList.remove('active');
+      musicBtn.textContent = '♪';
+    }
+  });
+
+  // ============ ALL FIVE HEARTS — CONFETTI CELEBRATION ============
+  function celebrateAllHearts() {
+    // Heart rain
+    for (let i = 0; i < 30; i++) {
+      setTimeout(() => spawnHeartRain(), i * 80);
+    }
+    // Confetti
+    for (let i = 0; i < 50; i++) {
+      setTimeout(() => spawnConfetti(), i * 60);
+    }
+  }
+
+  function spawnHeartRain() {
+    const h = document.createElement('span');
+    h.className = 'heart-rain';
+    h.textContent = ['♥', '♡', '❤'][Math.floor(Math.random() * 3)];
+    h.style.left = Math.random() * 100 + 'vw';
+    h.style.fontSize = (Math.random() * 1.5 + 1) + 'rem';
+    h.style.animationDuration = (Math.random() * 2 + 2.5) + 's';
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 5000);
+  }
+
+  function spawnConfetti() {
+    const c = document.createElement('span');
+    c.className = 'confetti-piece';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = ['#c98994', '#d4a574', '#a76570', '#fce4e8', '#f4e4d4'][Math.floor(Math.random() * 5)];
+    c.style.animationDuration = (Math.random() * 2 + 3) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 5500);
+  }
+
+  // ============ FLOATING NAME OVERLAY ============
+  function floatName(text) {
+    const overlay = document.createElement('div');
+    overlay.className = 'name-float-overlay';
+    overlay.innerHTML = `<div class="name-float-text">${text}</div>`;
+    document.body.appendChild(overlay);
+    // Heart rain alongside
+    for (let i = 0; i < 15; i++) setTimeout(spawnHeartRain, i * 100);
+    setTimeout(() => overlay.remove(), 4200);
+  }
+
+  // ============ KEYBOARD TYPING EASTER EGGS ============
   let typed = '';
   document.addEventListener('keydown', (e) => {
-    typed = (typed + e.key.toLowerCase()).slice(-7);
-    if (typed === 'i love u' || typed.endsWith('love')) {
+    // Only track letter keys
+    if (e.key.length !== 1) return;
+    typed = (typed + e.key.toLowerCase()).slice(-15);
+
+    if (typed.endsWith('muskan')) {
+      floatName('Muskan');
+      showToast('There she is. The most beautiful name. ♡');
+      typed = '';
+    } else if (typed.endsWith('beetu')) {
+      floatName('Beetu');
+      showToast('Yes, jaan? You called? ♡');
+      typed = '';
+    } else if (typed.endsWith('jaan')) {
+      showToast('मेरी जान। ♡  My everything. — Beetu');
+      for (let i = 0; i < 8; i++) setTimeout(spawnHeartRain, i * 120);
+      typed = '';
+    } else if (typed.endsWith('love') || typed.endsWith('iloveu') || typed.endsWith('iloveyou')) {
       showToast('I love you too, Muskan. Always. ♡ — Beetu');
+      for (let i = 0; i < 12; i++) setTimeout(spawnHeartRain, i * 100);
+      typed = '';
+    } else if (typed.endsWith('wedding') || typed.endsWith('shaadi')) {
+      showToast('Soon, my love. December 12th. ♡');
+      typed = '';
+    } else if (typed.endsWith('forever')) {
+      showToast('Forever and a few extra lifetimes after that. ♡');
       typed = '';
     }
   });
+
+  // ============ KONAMI CODE: ↑↑↓↓←→←→ ============
+  const konami = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight'];
+  let konamiIdx = 0;
+  document.addEventListener('keydown', (e) => {
+    if (e.key === konami[konamiIdx]) {
+      konamiIdx++;
+      if (konamiIdx === konami.length) {
+        konamiIdx = 0;
+        showToast('★ SECRET UNLOCKED ★ The universe approves of us. ♡');
+        celebrateAllHearts();
+      }
+    } else {
+      konamiIdx = e.key === konami[0] ? 1 : 0;
+    }
+  });
+
+  // ============ TRIPLE-CLICK HER NAME ============
+  const heroName = document.getElementById('heroName');
+  let nameClicks = 0;
+  let nameClickTimer;
+  if (heroName) {
+    heroName.style.cursor = 'pointer';
+    heroName.addEventListener('click', (e) => {
+      e.stopPropagation();
+      nameClicks++;
+      clearTimeout(nameClickTimer);
+      nameClickTimer = setTimeout(() => { nameClicks = 0; }, 800);
+      if (nameClicks >= 3) {
+        nameClicks = 0;
+        heroName.classList.add('pulse-special');
+        setTimeout(() => heroName.classList.remove('pulse-special'), 1600);
+        showToast('Six letters, infinite meaning. ♡');
+        for (let i = 0; i < 10; i++) setTimeout(spawnHeartRain, i * 100);
+      }
+    });
+  }
+
+  // ============ CLICK BEETU SIGNATURE IN LETTER ============
+  const signatureName = document.getElementById('signatureName');
+  const signatureExtra = document.getElementById('signatureExtra');
+  if (signatureName && signatureExtra) {
+    signatureName.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      signatureExtra.classList.toggle('visible');
+    });
+  }
+
+  // ============ CLICK WEDDING DATE ============
+  const weddingDate = document.getElementById('weddingDate');
+  if (weddingDate) {
+    let dateClicks = 0;
+    weddingDate.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dateClicks++;
+      const messages = [
+        'The day you become Mrs. Beetu. ♡',
+        'I\'ve been counting since the day we met.',
+        'Eight months. Seems short. Feels long. Worth it.'
+      ];
+      showToast(messages[(dateClicks - 1) % messages.length]);
+    });
+  }
+
+  // ============ FINALE SCROLL = AUTO CELEBRATION (once) ============
+  let finaleCelebrated = false;
+  const finale = document.querySelector('.finale');
+  if (finale) {
+    const finaleObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !finaleCelebrated) {
+          finaleCelebrated = true;
+          // Gentle celebration
+          for (let i = 0; i < 10; i++) {
+            setTimeout(spawnHeartRain, i * 200);
+          }
+        }
+      });
+    }, { threshold: 0.5 });
+    finaleObserver.observe(finale);
+  }
+
+  // ============ NEW: DOUBLE-TAP PHOTOS (Instagram-style heart) ============
+  document.querySelectorAll('.photo-frame').forEach(frame => {
+    let lastTap = 0;
+    const handleTap = (e) => {
+      const now = Date.now();
+      if (now - lastTap < 350 && now - lastTap > 0) {
+        // Double tap detected
+        e.preventDefault();
+        const heart = document.createElement('span');
+        heart.className = 'photo-heart-pop';
+        heart.textContent = '❤';
+        frame.appendChild(heart);
+        setTimeout(() => heart.remove(), 1000);
+        lastTap = 0;
+      } else {
+        lastTap = now;
+      }
+    };
+    frame.addEventListener('click', handleTap);
+    frame.addEventListener('touchend', handleTap);
+  });
+
+  // ============ NEW: IDLE DETECTION ============
+  let idleTimer;
+  let idleMessageShown = false;
+  const idleMessages = [
+    'Still here, jaan? Take your time. I\'ll wait. ♡',
+    'No rush. Read every word. I wrote them all for you. ♡',
+    'Take a breath. We have forever. ♡'
+  ];
+  let idleMsgIdx = 0;
+  function resetIdle() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      showToast(idleMessages[idleMsgIdx % idleMessages.length]);
+      idleMsgIdx++;
+    }, 60000); // 60 seconds
+  }
+  ['scroll', 'click', 'touchstart', 'keydown', 'mousemove'].forEach(ev => {
+    document.addEventListener(ev, resetIdle, { passive: true });
+  });
+  resetIdle();
+
+  // ============ NEW: SCROLL-TO-BOTTOM ACHIEVEMENT ============
+  let bottomReached = false;
+  window.addEventListener('scroll', () => {
+    if (bottomReached) return;
+    const scrolled = window.innerHeight + window.scrollY;
+    const total = document.body.offsetHeight;
+    if (scrolled >= total - 80) {
+      bottomReached = true;
+      setTimeout(() => {
+        showToast('You read every single word. That\'s why I love you. ♡ — Beetu');
+      }, 1500);
+    }
+  }, { passive: true });
+
+  // ============ NEW: CLICK HERO DATE ============
+  const heroDate = document.querySelector('.hero-date');
+  if (heroDate) {
+    heroDate.style.cursor = 'pointer';
+    let heroDateClicks = 0;
+    const heroDateMessages = [
+      'Four years ago today. Best day of my life. ♡',
+      'I\'d relive every single one of these days with you.',
+      'April 26th. Mark it on every calendar, every year, forever.'
+    ];
+    heroDate.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showToast(heroDateMessages[heroDateClicks % heroDateMessages.length]);
+      heroDateClicks++;
+    });
+  }
+
+  // ============ NEW: MUSIC BUTTON RAPID TAP ============
+  let musicTaps = 0;
+  let musicTapTimer;
+  musicBtn.addEventListener('click', () => {
+    musicTaps++;
+    clearTimeout(musicTapTimer);
+    musicTapTimer = setTimeout(() => { musicTaps = 0; }, 3000);
+    if (musicTaps === 5) {
+      musicTaps = 0;
+      setTimeout(() => {
+        showToast('Easy on the music button, jaan ♪ but I love your enthusiasm ♡');
+      }, 600);
+    }
+  });
+
+  // ============ NEW: MORE TYPING WORDS ============
+  document.addEventListener('keydown', (e) => {
+    if (e.key.length !== 1) return;
+    const lc = (typed + '').toLowerCase();
+    if (lc.endsWith('rishikesh')) {
+      showToast('The trip that decided us. The Ganga remembers. ♡');
+      for (let i = 0; i < 8; i++) setTimeout(spawnHeartRain, i * 120);
+    } else if (lc.endsWith('always')) {
+      showToast('Always. And always. And always. ♡');
+    } else if (lc.endsWith('mybeetu') || lc.endsWith('mymuskan')) {
+      showToast('Yours. Always yours. ♡');
+      for (let i = 0; i < 6; i++) setTimeout(spawnHeartRain, i * 130);
+    } else if (lc.endsWith('december')) {
+      const wedding = new Date('2026-12-12').getTime();
+      const diff = wedding - Date.now();
+      const days = Math.max(0, Math.floor(diff / 86400000));
+      showToast(`${days} days until I officially marry you, Muskan. ♡`);
+    } else if (lc.endsWith('goa')) {
+      showToast('Sand, sea, you. Easy choice. ♡');
+    }
+  });
+
+  // ============ NEW: HIGHER CLICK MILESTONES ============
+  // (extend the existing click counter)
+  const originalClickHandler = document.addEventListener;
+  // Watch the click count externally
+  let extraClickWatch = setInterval(() => {
+    if (clickCount === 100) {
+      showToast('★ 100 hearts ★ One for every reason I love you. (And I have more.)');
+      clickCount++; // bump past so it doesn't repeat
+    } else if (clickCount === 200) {
+      showToast('200 hearts. Are you trying to wear out the screen, jaan? ♡');
+      clickCount++;
+    } else if (clickCount === 365) {
+      showToast('365 hearts. One for every day of the year I think about you. ♡');
+      clickCount++;
+    }
+  }, 500);
 </script>
 
 </body>
